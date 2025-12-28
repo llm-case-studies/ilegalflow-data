@@ -80,12 +80,31 @@ def list_available_files(product_id: str, api_key: str, limit: int = 10) -> list
         return []
 
     data = response.json()
-    files = data.get("files", [])
+
+    # Navigate the USPTO response structure
+    # Structure: bulkDataProductBag[0].productFileBag.fileDataBag
+    products = data.get("bulkDataProductBag", [])
+    if not products:
+        print("No products found in response")
+        return []
+
+    file_bag = products[0].get("productFileBag", {})
+    files = file_bag.get("fileDataBag", [])
+
+    # Map to simpler structure
+    result = []
+    for f in files:
+        result.append({
+            "fileName": f.get("fileName"),
+            "fileSize": f.get("fileSize", 0),
+            "releaseDate": f.get("fileReleaseDate", ""),
+            "fileDownloadUrl": f.get("fileDownloadURI")
+        })
 
     # Sort by release date (newest first)
-    files.sort(key=lambda x: x.get("releaseDate", ""), reverse=True)
+    result.sort(key=lambda x: x.get("releaseDate", ""), reverse=True)
 
-    return files[:limit] if limit else files
+    return result[:limit] if limit else result
 
 
 def download_file(file_info: dict, dest_dir: Path, api_key: str, force: bool = False) -> bool:

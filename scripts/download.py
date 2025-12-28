@@ -218,15 +218,60 @@ def list_files(api_key: str, product: str = PRODUCT_DAILY, limit: int = 20):
         print(f"  {name:<25} {size:>12,} bytes  {date}")
 
 
+def download_all(config: dict, api_key: str, product: str, subdir: str):
+    """Download ALL files from a product (annual backfile or all daily)."""
+    raw_path = Path(config["data"]["raw_path"]) / subdir
+
+    # Get ALL files (no limit)
+    files = list_available_files(product, api_key, limit=None)
+
+    if not files:
+        print("No files found")
+        return
+
+    # Calculate total size
+    total_size = sum(f.get("fileSize", 0) for f in files)
+    print(f"\nDownloading {len(files)} files ({total_size / (1024**3):.1f} GB total)")
+    print(f"Destination: {raw_path}")
+    print("-" * 60)
+
+    success = 0
+    downloaded_bytes = 0
+
+    for i, file_info in enumerate(files, 1):
+        filename = file_info.get("fileName", "?")
+        filesize = file_info.get("fileSize", 0)
+
+        print(f"\n[{i}/{len(files)}] {filename}")
+
+        if download_file(file_info, raw_path, api_key):
+            success += 1
+            downloaded_bytes += filesize
+
+        # Progress update
+        pct = (downloaded_bytes / total_size * 100) if total_size else 0
+        print(f"  Progress: {downloaded_bytes / (1024**3):.2f} / {total_size / (1024**3):.1f} GB ({pct:.1f}%)")
+
+        # Respect rate limits - wait between downloads
+        time.sleep(2)
+
+    print(f"\n{'='*60}")
+    print(f"Complete! Downloaded {success}/{len(files)} files")
+    print(f"Total: {downloaded_bytes / (1024**3):.2f} GB")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Download USPTO trademark data via Open Data Portal API",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-    python download.py --list              # See available files
+    python download.py --list              # See available daily files
+    python download.py --list --annual     # See available annual files
     python download.py --sample            # Download latest daily file
-    python download.py --daily --days 7    # Download last 7 days
+    python download.py --daily --days 7    # Download last 7 daily files
+    python download.py --all --annual      # Download FULL annual backfile (~9GB)
+    python download.py --all               # Download ALL daily files for 2025
 
 Requires USPTO_API_KEY environment variable.
 Get your key at: https://data.uspto.gov/myodp
@@ -241,7 +286,9 @@ Get your key at: https://data.uspto.gov/myodp
     parser.add_argument("--days", type=int, default=7,
                        help="Number of daily files to download (default: 7)")
     parser.add_argument("--annual", action="store_true",
-                       help="List/download annual archive files")
+                       help="Use annual archive instead of daily")
+    parser.add_argument("--all", action="store_true",
+                       help="Download ALL files (use with --annual for full backfile)")
     parser.add_argument("--force", action="store_true",
                        help="Re-download even if file exists")
 
@@ -252,9 +299,13 @@ Get your key at: https://data.uspto.gov/myodp
     config = load_config()
 
     product = PRODUCT_ANNUAL if args.annual else PRODUCT_DAILY
+    subdir = "annual" if args.annual else "daily"
 
     if args.list:
-        list_files(api_key, product=product, limit=30)
+        limit = 100 if args.annual else 30
+        list_files(api_key, product=product, limit=limit)
+    elif args.all:
+        download_all(config, api_key, product, subdir)
     elif args.sample:
         download_latest(config, api_key, count=1)
     elif args.daily:

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ilegalflow.com/schemas/marks.schema.json",
+  "title": "USPTO Trademark Record",
+  "description": "Normalized trademark record from USPTO bulk data",
+  "type": "object",
+  "required": ["serial_number", "mark_text", "status"],
+  "properties": {
+    "serial_number": {
+      "type": "string",
+      "description": "USPTO serial number (8 digits)",
+      "pattern": "^[0-9]{8}$"
+    },
+    "registration_number": {
+      "type": ["string", "null"],
+      "description": "Registration number if registered"
+    },
+    "mark_text": {
+      "type": "string",
+      "description": "The word mark text (may be empty for design marks)"
+    },
+    "mark_type": {
+      "type": "string",
+      "enum": ["STANDARD", "DESIGN", "COMBINED", "SOUND", "OTHER"],
+      "description": "Type of trademark"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["LIVE", "DEAD", "PENDING"],
+      "description": "Current status of the mark"
+    },
+    "status_code": {
+      "type": "string",
+      "description": "Detailed USPTO status code"
+    },
+    "status_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of last status change"
+    },
+    "filing_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Original filing date"
+    },
+    "registration_date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Registration date if registered"
+    },
+    "abandonment_date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Abandonment date if abandoned"
+    },
+    "filing_basis": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["1A", "1B", "44D", "44E", "66A"]
+      },
+      "description": "Filing basis codes (1A=use, 1B=ITU, 44D/E=foreign, 66A=Madrid)"
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 45
+      },
+      "description": "Nice classification codes"
+    },
+    "goods_services": {
+      "type": "string",
+      "description": "Description of goods and services"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Current owner name"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": ["INDIVIDUAL", "CORPORATION", "LLC", "PARTNERSHIP", "OTHER"],
+      "description": "Type of owner entity"
+    },
+    "attorney_name": {
+      "type": ["string", "null"],
+      "description": "Attorney of record if any"
+    },
+    "design_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Design search codes for logo marks"
+    }
+  },
+  "additionalProperties": false
+}

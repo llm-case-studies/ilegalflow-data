@@ -1,0 +1,46 @@
+# Data files (stored on external drive, not in git)
+*.xml
+*.xml.zip
+*.parquet
+*.csv
+!samples/*.csv
+!samples/*.json
+
+# Release artifacts (large outputs)
+releases/*/
+
+# Keep release folder structure visible
+!releases/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config with secrets
+config/config.yaml
+!config/config.example.yaml
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

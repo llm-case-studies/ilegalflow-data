@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ilegalflow.com/schemas/features.schema.json",
+  "title": "Trademark Features",
+  "description": "Computed features for trademark search and analysis",
+  "type": "object",
+  "required": ["serial_number"],
+  "properties": {
+    "serial_number": {
+      "type": "string",
+      "description": "Links to marks.serial_number"
+    },
+    "phonetics": {
+      "type": "object",
+      "properties": {
+        "soundex": {
+          "type": "string",
+          "description": "Soundex encoding of mark_text"
+        },
+        "metaphone": {
+          "type": "string",
+          "description": "Metaphone encoding"
+        },
+        "double_metaphone": {
+          "type": "array",
+          "items": {"type": "string"},
+          "maxItems": 2,
+          "description": "Double Metaphone primary and alternate"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "properties": {
+        "words": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Tokenized words from mark_text"
+        },
+        "dominant_term": {
+          "type": ["string", "null"],
+          "description": "Likely dominant term (longest non-generic word)"
+        },
+        "ngrams_2": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Character bigrams"
+        },
+        "ngrams_3": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Character trigrams"
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "is_descriptive": {
+          "type": "boolean",
+          "description": "Heuristic: likely descriptive term"
+        },
+        "is_generic": {
+          "type": "boolean",
+          "description": "Heuristic: likely generic term"
+        },
+        "word_count": {
+          "type": "integer",
+          "description": "Number of words in mark"
+        }
+      }
+    },
+    "curriculum_labels": {
+      "type": "object",
+      "description": "Labels for educational content",
+      "properties": {
+        "failure_type": {
+          "type": ["string", "null"],
+          "enum": ["LIKELIHOOD_CONFUSION", "DESCRIPTIVENESS", "GENERICNESS", "SPECIMEN", "NON_RESPONSE", "OTHER", null],
+          "description": "If abandoned, likely reason category"
+        },
+        "office_action_count": {
+          "type": "integer",
+          "description": "Number of office actions received"
+        },
+        "is_pro_se": {
+          "type": "boolean",
+          "description": "No attorney of record"
+        }
+      }
+    }
+  }
+}

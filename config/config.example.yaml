@@ -1,0 +1,55 @@
+# iLegalFlow Data Configuration
+# Copy this to config.yaml and adjust paths for your system
+
+data:
+  # Where raw USPTO XML files are stored (external drive)
+  raw_path: /mnt/uspto-data/raw
+
+  # Where processed artifacts are written
+  output_path: /mnt/uspto-data/releases
+
+  # Temporary processing directory (should be fast SSD)
+  temp_path: /tmp/ilegalflow
+
+uspto:
+  # Bulk data URLs
+  daily_xml_base: https://bulkdata.uspto.gov/data/trademark/dailyxml/applications/
+  annual_xml_base: https://bulkdata.uspto.gov/data/trademark/
+
+  # Which years to download for historical data
+  years:
+    - 2024
+    - 2023
+    - 2022
+
+processing:
+  # Number of parallel workers for parsing
+  workers: 4
+
+  # Batch size for database inserts
+  batch_size: 10000
+
+  # Generate features during parsing (slower but single pass)
+  inline_features: false
+
+search:
+  # Search engine backend: manticore | tantivy | opensearch
+  backend: manticore
+
+  # Connection settings
+  manticore:
+    host: localhost
+    port: 9306
+    index_name: uspto_trademarks
+
+features:
+  # Phonetic algorithms to run
+  phonetics:
+    - soundex
+    - metaphone
+    - double_metaphone
+
+  # Generate n-grams for fuzzy matching
+  ngrams:
+    min: 2
+    max: 4

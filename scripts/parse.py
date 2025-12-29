@@ -107,9 +107,15 @@ def parse_case_file(case_file: ET.Element) -> Optional[Dict[str, Any]]:
 
         serial_number = serial.text.strip().zfill(8)
 
-        # Find mark text
+        # Find mark text - try multiple locations used across schema versions
         mark_text = ""
-        for path in [".//mark-text", ".//word-mark", ".//standard-character-claim-in/text-element"]:
+        for path in [
+            ".//case-file-header/mark-identification",  # Current daily/annual XML format
+            ".//mark-identification",
+            ".//mark-text",
+            ".//word-mark",
+            ".//standard-character-claim-in/text-element"
+        ]:
             element = case_file.find(path)
             if element is not None and element.text:
                 mark_text = element.text.strip()
@@ -126,12 +132,24 @@ def parse_case_file(case_file: ET.Element) -> Optional[Dict[str, Any]]:
         else:
             status = "PENDING"
 
-        # Extract goods/services
+        # Extract goods/services - handles multiple schema versions
         goods_services_parts = []
-        for gs in case_file.findall(".//goods-and-services"):
-            text = extract_text(gs.find("goods-services-text"))
-            if text:
-                goods_services_parts.append(text)
+
+        # Try current format: case-file-statement with GS* type-code
+        for stmt in case_file.findall(".//case-file-statement"):
+            type_code = extract_text(stmt.find("type-code"))
+            if type_code.startswith("GS"):  # Goods/Services statement
+                text = extract_text(stmt.find("text"))
+                if text:
+                    goods_services_parts.append(text)
+
+        # Fall back to older format if nothing found
+        if not goods_services_parts:
+            for gs in case_file.findall(".//goods-and-services"):
+                text = extract_text(gs.find("goods-services-text"))
+                if text:
+                    goods_services_parts.append(text)
+
         goods_services = " | ".join(goods_services_parts)
 
         # Extract owner

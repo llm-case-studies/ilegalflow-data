@@ -1,0 +1,7 @@
+# Core dependencies
+pyyaml>=6.0
+requests>=2.28
+python-dotenv>=1.0
+
+# Optional: for parquet output
+# pyarrow>=14.0

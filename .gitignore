@@ -6,6 +6,9 @@
 !samples/*.csv
 !samples/*.json
 
+# Symlink to external data storage
+data
+
 # Release artifacts (large outputs)
 releases/*/
 
@@ -35,6 +38,11 @@ Thumbs.db
 # Config with secrets
 config/config.yaml
 !config/config.example.yaml
+
+# Environment files with secrets
+.env
+.env.local
+!.env.example
 
 # Logs
 *.log

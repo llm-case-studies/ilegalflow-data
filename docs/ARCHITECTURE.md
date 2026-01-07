@@ -13,13 +13,18 @@ This repository is the **data foundation** of the iLegalFlow ecosystem. It trans
 
 ## Data Sources
 
-### USPTO Bulk Data Portal
+### USPTO Open Data Portal (ODP)
 
-| Dataset | URL | Update Frequency | Size |
-|---------|-----|------------------|------|
-| Daily Applications XML | `bulkdata.uspto.gov/data/trademark/dailyxml/applications/` | Daily | 3-60MB/day |
-| Annual Applications XML | `bulkdata.uspto.gov/data/trademark/` | Annual | ~10GB/year |
-| Case Files Dataset | `uspto.gov/ip-policy/economic-research/research-datasets/` | Quarterly | ~1GB |
+> **Note:** The legacy BDSS (`bulkdata.uspto.gov`) was retired in April 2025.
+> All access now requires an API key via the Open Data Portal.
+> See [USPTO-API-ACCESS.md](USPTO-API-ACCESS.md) for setup instructions.
+
+| Product ID | Dataset | Update Frequency | Size |
+|------------|---------|------------------|------|
+| **TRTDXFAP** | Trademark Daily XML - Applications | Tue-Sat | 10-50MB/day |
+| **TRTYRAP** | Trademark Annual XML - Applications | Annual | ~100GB total |
+| **TRTDXFAG** | Trademark Daily XML - Assignments | Daily | Variable |
+| Case Files | Research dataset (CSV/DTA) | Quarterly | ~4GB |
 
 ### Data Characteristics
 
@@ -35,8 +40,10 @@ This repository is the **data foundation** of the iLegalFlow ecosystem. It trans
 │                    ACQUIRE PHASE                            │
 ├─────────────────────────────────────────────────────────────┤
 │  download.py                                                │
-│  • Fetch daily/annual XML from USPTO                       │
-│  • Verify checksums                                         │
+│  • Authenticate via USPTO API (x-api-key header)           │
+│  • Query metadata endpoint for available files              │
+│  • Fetch daily/annual XML (serial, respects rate limits)   │
+│  • Handle 307 redirects to CDN                              │
 │  • Store in raw_path                                       │
 └─────────────────────────────────────────────────────────────┘
                             │
@@ -171,6 +178,33 @@ Phase 2 will add semantic search:
 - Use all-MiniLM-L6-v2 or legal-domain fine-tuned model
 - Store in vector-capable engine (OpenSearch, Vespa, or HNSW in Manticore)
 - Enable "conceptually similar" searches beyond phonetics
+
+## Deployment Models
+
+### iLegalFlow Extension (Free/Public)
+- Single API key owned by iLegalFlow team
+- Nightly batch ingestion to shared infrastructure
+- Users query our Manticore instance
+- No direct USPTO API calls from users
+
+### Law Firm Appliance ($10K On-Prem)
+- Firm provides their own USPTO API key
+- Complete data sovereignty on their hardware
+- No dependency on iLegalFlow servers
+- Their key = their audit trail at USPTO
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  LAW FIRM APPLIANCE ARCHITECTURE                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   USPTO API ─────> Appliance ─────> Firm's Manticore        │
+│       │               │                    │                │
+│   Firm's Key     Their Hardware       Their Searches        │
+│   (ID.me)        (On-Prem/VPC)       (Never leaves)         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Related Repositories
 
